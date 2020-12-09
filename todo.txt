@@ -1,0 +1,8 @@
+features to add:-
+> for loop while loop
+> better path printing
+> tab completion
+> commands history
+> google search shortcut
+> stackoverflow shortcut
+> help
