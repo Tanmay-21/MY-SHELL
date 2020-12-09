@@ -36,9 +36,9 @@ char *itoa(int value, char *result, int base)
     return result;
 }
 
-// -------The max number of arguments that can be present in a command-------
+// -------The max number of arguments in a command-------
 #define SH_TOKEN_BUFSIZE 1000
-// -------The characters which will act as seperators in a command-------
+// -------The characters acting as seperators in a command-------
 #define SH_TOKEN_DELIMIN " \"\t\r\n"
 
 // -------Function to separate command into arguments-------
@@ -67,7 +67,7 @@ char **sh_split_line(char *line)
     return tokens;
 }
 
-// -------Function to read a command from terminal-------
+// -------Function to read command from terminal-------
 char *sh_read_line()
 {
     char *line = NULL;
@@ -82,7 +82,6 @@ char *sh_read_line()
         }
         else
         {
-            // some other error occurred
             // this text is printed before the error message
             perror("My-Shell: getline\n");
             exit(EXIT_FAILURE);
@@ -91,7 +90,7 @@ char *sh_read_line()
     return line;
 }
 
-// -------Function to initiate and run the specified process-------
+// -------Function to initiate and run process-------
 int sh_launch(char **args)
 {
     pid_t pid;
@@ -99,11 +98,11 @@ int sh_launch(char **args)
     pid = fork(); // fork the current process and get its process id
     if (pid == 0)
     {
-        // in the child process of the current process
+        // child process
         // execute the specified process
         if (execvp(args[0], args) == -1)
         {
-            // if there is any return value of execution
+            // if any return value
             // then execution failed
             printf("Invalid Command\n");
         }
@@ -111,12 +110,12 @@ int sh_launch(char **args)
     }
     else if (pid < 0)
     {
-        // failure in forking the current process
+        // failure in forking
         perror("My-Shell");
     }
     else
     {
-        // in the parent process wait till the completion of child process
+        // wait till the completion of child process
         do
         {
             waitpid(pid, &status, WUNTRACED);
@@ -139,7 +138,7 @@ void reset() { printf("\033[0m"); }
 void sh_print_main()
 {
     char path[100];
-    ssize_t bufsize = 100; // specify size of path string
+    ssize_t bufsize = 100; // size of path string
     change_red();
     printf("My-Shell:");
     change_cyan();
@@ -165,15 +164,15 @@ int sh_cd(char **args)
     // args[0] == "cd"
     if (args[1] == NULL)
     {
-        // when no arguments follow "cd"
+        // no arguments follow "cd"
         fprintf(stderr, "Shell: expected argument to \"cd\"\n");
     }
     else
     {
-        // change directory according to arguments followed by "cd"
+        // change directory to arguments followed by "cd"
         if (chdir(args[1]) != 0)
         {
-            // if arguments followed are invalid
+            // invalid arguments
             perror("Invalid Call");
         }
     }
@@ -183,9 +182,9 @@ int sh_cd(char **args)
 // -------Function for builtin command "exit" for terminating the shell-------
 int sh_exit(char **args)
 {
-    // show acknowledgement message before terminating
+    // acknowledgement message
     printf("Logged Out !!!\n");
-    return 0; // return status 0 to end the main while loop
+    return 0; // return status 0 to end the main shell loop
 }
 
 // -------Function to search anything on google from shell-------
@@ -248,19 +247,20 @@ int sh_stackoverflow(char **args)
 
 // -------Number of primary builtin commands-------
 #define BUILTINPRIM 4
-// -------Specifiying the keywords for those commands-------
+// -------Specifiying the keywords-------
 char *builtin_primary_str[] = {
     "cd",
     "exit",
     "google",
     "stackoverflow"};
 
-// -------Array of pointers to the primary built in functions-------
+// -------Array of pointers to primary built in functions-------
 int (*builtin_primary_func[])(char **) = {
     &sh_cd,
     &sh_exit,
     &sh_google,
-    &sh_stackoverflow};
+    &sh_stackoverflow
+};
 
 // -------Function to check for the call to any primary builtin command-------
 // -------Primary builtin commands can only call or use system commands-------
