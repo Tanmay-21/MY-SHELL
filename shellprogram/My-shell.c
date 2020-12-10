@@ -62,7 +62,7 @@ char **sh_split_line(char *line)
         token = strtok(NULL, SH_TOKEN_DELIMIN);
         position++;
     }
-    // end the arguments array with a null to specify where it ends
+    // end the arguments array with a null to specify end
     tokens[position] = NULL;
     return tokens;
 }
@@ -74,15 +74,15 @@ char *sh_read_line()
     ssize_t bufsize = 0;
     if (getline(&line, &bufsize, stdin) == -1)
     {
-        // if failure in getting input
+        // failure in getting input
         if (feof(stdin))
         {
-            // if stream still ends in null i.e. empty
+            // stream ends in null i.e. empty
             exit(EXIT_SUCCESS);
         }
         else
         {
-            // this text is printed before the error message
+            // error message with pretext
             perror("My-Shell: getline\n");
             exit(EXIT_FAILURE);
         }
@@ -95,7 +95,7 @@ int sh_launch(char **args)
 {
     pid_t pid;
     int status;
-    pid = fork(); // fork the current process and get its process id
+    pid = fork(); // fork the current process
     if (pid == 0)
     {
         // child process
@@ -268,13 +268,13 @@ int sh_check_primary(char **args)
 {
     for (int i = 0; i < BUILTINPRIM; i++)
     {
-        // compare the first argument of command to specified keywords
+        // check for specified keywords
         if (strcmp(args[0], builtin_primary_str[i]) == 0)
         {
             return (*builtin_primary_func[i])(args);
         }
     }
-    // if arguments do not match any primary builtin command
+    // no primary builtin command
     return -1;
 }
 
@@ -286,11 +286,11 @@ int sh_sub_execute(char **args)
         // empty command
         return 1;
     }
-    // check for primary commands
+    // check primary commands
     int prim_status = sh_check_primary(args);
     if (prim_status != -1)
     {
-        // if primary command executed
+        // primary command executed
         return prim_status;
     }
     return sh_launch(args);
@@ -424,13 +424,13 @@ int sh_check_secondary(char **args)
 {
     for (int i = 0; i < BUILTINSECD; i++)
     {
-        // compare the first argument of command to specified keywords
+        // check for specified keywords
         if (strcmp(args[0], builtin_secondary_str[i]) == 0)
         {
             return (*builtin_secondary_func[i])(args);
         }
     }
-    // if arguments do not match any primary builtin command
+    // no secondary builtin command
     return -1;
 }
 
@@ -442,18 +442,18 @@ int sh_execute(char **args)
         // empty command
         return 1;
     }
-    // check for primary commands
+    // check primary commands
     int prim = sh_check_primary(args);
     if (prim != -1)
     {
-        // if primary command executed
+        // primary command executed
         return prim;
     }
-    // check for secondary commands
+    // check secondary commands
     int sec = sh_check_secondary(args);
     if (sec != -1)
     {
-        // if secondary command executed
+        // secondary command executed
         return sec;
     }
     return sh_launch(args);
@@ -461,9 +461,9 @@ int sh_execute(char **args)
 
 int main(int argc, char **argv)
 {
-    char *line;  // to store complete input command
-    char **args; // to store input command as array of arguments
-    int status;  // to store status after every command execution
+    char *line;  // store complete input command
+    char **args; // store arguments of input command
+    int status;  // store status after command execution
     do
     {
         sh_print_main();
