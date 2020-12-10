@@ -1,6 +1,7 @@
 // -------Including Necessary Headers-------
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -40,9 +41,10 @@ char *itoa(int value, char *result, int base)
 #define SH_TOKEN_BUFSIZE 1000
 // -------The characters acting as seperators in a command-------
 #define SH_TOKEN_DELIMIN " \"\t\r\n"
+#define SH_TOKEN_DELIMIN_SUB "{}."
 
 // -------Function to separate command into arguments-------
-char **sh_split_line(char *line)
+char **sh_split_line(char *line, bool sub)
 {
     int bufsize = SH_TOKEN_BUFSIZE;
     int position = 0;
@@ -55,11 +57,25 @@ char **sh_split_line(char *line)
         exit(EXIT_FAILURE);
     }
     // take arguments seperated by specified deliminators
-    token = strtok(line, SH_TOKEN_DELIMIN);
+    if (sub)
+    {
+        token = strtok(line, SH_TOKEN_DELIMIN_SUB);
+    }
+    else
+    {
+        token = strtok(line, SH_TOKEN_DELIMIN);
+    }
     while (token != NULL)
     {
         tokens[position] = token;
-        token = strtok(NULL, SH_TOKEN_DELIMIN);
+        if (sub)
+        {
+            token = strtok(NULL, SH_TOKEN_DELIMIN_SUB);
+        }
+        else
+        {
+            token = strtok(NULL, SH_TOKEN_DELIMIN);
+        }
         position++;
     }
     // end the arguments array with a null to specify end
@@ -195,7 +211,7 @@ int sh_google(char **args)
         // if nothing to search open google search default
         char line[] = "xdg-open https://www.google.com"; // command to open url in default browser
         char **Args;
-        Args = sh_split_line(line);
+        Args = sh_split_line(line, false);
         return sh_launch(Args);
     }
     // create url from command arguments as search query
@@ -212,7 +228,7 @@ int sh_google(char **args)
         strcat(line, args[i]);
     }
     char **Args;
-    Args = sh_split_line(line);
+    Args = sh_split_line(line, false);
     return sh_launch(Args);
 }
 
@@ -224,7 +240,7 @@ int sh_stackoverflow(char **args)
         // if nothing to search open stackoverflow default
         char line[] = "xdg-open https://www.stackoverflow.com"; // command to open url in default browser
         char **Args;
-        Args = sh_split_line(line);
+        Args = sh_split_line(line, false);
         return sh_launch(Args);
     }
     // create url from command arguments as search query
@@ -241,7 +257,7 @@ int sh_stackoverflow(char **args)
         strcat(line, args[i]);
     }
     char **Args;
-    Args = sh_split_line(line);
+    Args = sh_split_line(line, false);
     return sh_launch(Args);
 }
 
@@ -333,6 +349,28 @@ int sh_for(char **args)
         fprintf(stderr, "Shell: no range specified\n");
         return 1;
     }
+    // 3 ways to specify range
+    // -> a b c d e .. so on (individual elements of range)
+    // -> {a..b..c} range starts from a, ends at b, increments by c
+    // -> {a..b} same as above except increment is 1 by default
+    bool type1;
+    int a, b, c;
+    if (args[3][1] == '{')
+    {
+        type1 = false;
+        if (args[4] != NULL)
+        {
+            fprintf(stderr, "Shell: too many arguments\n");
+            return 1;
+        }
+        char **SubArgs;
+        SubArgs = sh_split_line(args[3], true);
+        if (SubArgs[0] == NULL) 
+        {
+            fprintf(stderr, "Shell: no range specified\n");
+            return 1;
+        }
+    }
     int bufsize = RANGEBUFSIZE;
     // store values to iterate over in the range array
     int *range = malloc(bufsize * sizeof(int));
@@ -356,7 +394,7 @@ int sh_for(char **args)
     // do
     syntax = "do";
     line = sh_read_line();
-    Args = sh_split_line(line);
+    Args = sh_split_line(line, false);
     if (strcmp(Args[0], syntax) != 0)
     {
         fprintf(stderr, "Shell: wrong syntax1\n");
@@ -365,12 +403,12 @@ int sh_for(char **args)
     // command to loop
     sh_print_sub();
     line = sh_read_line();
-    char **Store_Args = sh_split_line(line);
+    char **Store_Args = sh_split_line(line, false);
     sh_print_sub();
     // done
     syntax = "done";
     line = sh_read_line();
-    Args = sh_split_line(line);
+    Args = sh_split_line(line, false);
     if (strcmp(Args[0], syntax) != 0)
     {
         fprintf(stderr, "Shell: wrong syntax\n");
@@ -468,7 +506,7 @@ int main(int argc, char **argv)
     {
         sh_print_main();
         line = sh_read_line();      // input command
-        args = sh_split_line(line); // split into arguments
+        args = sh_split_line(line, false); // split into arguments
         status = sh_execute(args);  // execute command
         free(line);
         free(args);
