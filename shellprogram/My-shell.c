@@ -353,9 +353,15 @@ int sh_for(char **args)
     // -> a b c d e .. so on (individual elements of range)
     // -> {a..b..c} range starts from a, ends at b, increments by c
     // -> {a..b} same as above except increment is 1 by default
-    bool type1;
+    int bufsize = RANGEBUFSIZE;
+    int position;
+    bool type1 = false; // type specifying parameter
+    // parameters for type 2 for loop
     int a, b, c;
-    if (args[3][1] == '{')
+    // parameters for type 1 for loop
+    int *range;
+    int RangeSize; 
+    if (args[3][0] == '{')
     {
         type1 = false;
         if (args[4] != NULL)
@@ -370,24 +376,43 @@ int sh_for(char **args)
             fprintf(stderr, "Shell: no range specified\n");
             return 1;
         }
-    }
-    int bufsize = RANGEBUFSIZE;
-    // store values to iterate over in the range array
-    int *range = malloc(bufsize * sizeof(int));
-    int position = 0;
-    for (int i = 3;; i++)
-    {
-        if (args[i] == NULL)
+        a = atoi(SubArgs[0]); // start value of range
+        if (SubArgs[1] == NULL)
         {
-            break;
+            fprintf(stderr, "Shell: range termination value not specified\n");
+            return 1;
         }
-        // as values a stored as strings convert them to int
-        range[position] = atoi(args[i]);
-        position++;
+        b = atoi(SubArgs[1]); // end value of range
+        c = 1; // increment is set to 1 by default
+        if (SubArgs[2] != NULL)
+        {
+            c = atoi(SubArgs[2]);
+            if(SubArgs[3] != NULL)
+            {
+                fprintf(stderr, "Shell: too many arguments\n");
+                return 1;
+            }
+        }
     }
-    // store size of range array
-    int RangeSize = position;
-
+    else
+    {
+        type1 = true;
+        // store values to iterate over in the range array
+        range = malloc(bufsize * sizeof(int));
+        position = 0;
+        for (int i = 3;; i++)
+        {
+            if (args[i] == NULL)
+            {
+                break;
+            }
+            // as values a stored as strings convert them to int
+            range[position] = atoi(args[i]);
+            position++;
+        }
+        // store size of range array
+        RangeSize = position;
+    }
     char *line;
     char **Args;
     sh_print_sub();
@@ -414,6 +439,7 @@ int sh_for(char **args)
         fprintf(stderr, "Shell: wrong syntax\n");
         return 1;
     }
+    // find positions to replace $i with value of i in loop command
     int *positions = malloc(bufsize * sizeof(int));
     position = 0;
     for (int i = 0;; i++)
@@ -429,18 +455,39 @@ int sh_for(char **args)
         }
     }
     int ReplaceSize = position;
-    for (int i = 0; i < RangeSize; i++)
+    // execute loop
+    if (type1 == true)
     {
-        for (int j = 0; j < ReplaceSize; j++)
+        for (int i = 0; i < RangeSize; i++)
         {
-            char snum[100];
-            itoa(range[i], snum, 10);
-            Store_Args[positions[j]] = snum;
+            for (int j = 0; j < ReplaceSize; j++)
+            {
+                char snum[100];
+                itoa(range[i], snum, 10);
+                Store_Args[positions[j]] = snum;
+            }
+            int ret = sh_sub_execute(Store_Args);
+            if (ret == 0)
+            {
+                return ret;
+            }
         }
-        int ret = sh_sub_execute(Store_Args);
-        if (ret == 0)
+    }
+    else
+    {
+        for (int i = a; i <= b; i += c)
         {
-            return ret;
+            for (int j = 0; j < ReplaceSize; j++)
+            {
+                char snum[100];
+                itoa(i, snum, 10);
+                Store_Args[positions[j]] = snum;
+            }
+            int ret = sh_sub_execute(Store_Args);
+            if (ret == 0)
+            {
+                return ret;
+            }
         }
     }
     return 1;
