@@ -41,7 +41,7 @@ char *itoa(int value, char *result, int base)
 #define SH_TOKEN_BUFSIZE 1000
 // -------The characters acting as seperators in a command-------
 #define SH_TOKEN_DELIMIN " \"\t\r\n"
-#define SH_TOKEN_DELIMIN_SUB "{}."
+#define SH_TOKEN_DELIMIN_SUB "{}./"
 
 // -------Function to separate command into arguments-------
 char **sh_split_line(char *line, bool sub)
@@ -159,7 +159,31 @@ void sh_print_main()
     printf("My-Shell:");
     change_cyan();
     // print current working directory path
-    printf("%s", getcwd(path, bufsize));
+    char *pwd = getcwd(path, bufsize);
+    char **args = sh_split_line(pwd , true);
+    // visible path shortening
+    if(args[0] == NULL)
+    {
+        printf("/");
+    }
+    else if(args[1] == NULL)
+    {
+        printf("/%s", args[0]);
+    }
+    else if(args[2] == NULL)
+    {
+        printf("/%s/%s",args[0],args[1]);
+    }
+    else
+    {
+        char *first, *second;
+        for (int i = 1; args[i] != NULL; i++)
+        {
+            first = args[i-1];
+            second = args[i];
+        }
+        printf("~/%s/%s", first, second);
+    }
     change_red();
     printf(">> ");
     reset();
