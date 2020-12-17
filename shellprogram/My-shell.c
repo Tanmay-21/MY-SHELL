@@ -574,6 +574,7 @@ int main(int argc, char **argv)
     char *line;  // store complete input command
     char **args; // store arguments of input command
     int status;  // store status after command execution
+    printf("Initializing Personal Shell...\n");
     do
     {
         sh_print_main();
