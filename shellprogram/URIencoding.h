@@ -5,7 +5,18 @@
 
 char* urlencode (char* originalText) {
   // Allocate memory for the worst possible case (all chara need to be encoded)
-  char *encoded = (char*) malloc (sizeof(char)*strlen(originalText)*3+1);
+  // lets save some memory
+  // find number of alphanumeric characters in search string
+  int countalpnum = 0;
+  int countspecial = 0;
+  for (int i = 0; i < strlen(originalText); i++) {
+    if (isalnum(originalText[i])) {
+      countalpnum ++;
+    } else {
+      countspecial ++;
+    }
+  }
+  char *encoded = (char*) malloc (sizeof(char)*(countalpnum + countspecial*3) + 1);
   const char *hex = "0123456789abcdef";
   int pos = 0;
   for (int i = 0; i < strlen(originalText); i++) {
