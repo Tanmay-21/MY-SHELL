@@ -118,7 +118,7 @@ int sh_launch (char **args) {
 void sh_print_main () {
   char path[100];
   ssize_t bufsize = 100; // size of path string
-  change_red();
+  change_green();
   printf("My-Shell:");
   change_cyan();
   // print current working directory path
@@ -139,8 +139,8 @@ void sh_print_main () {
     }
     printf("~/%s/%s", first, second);
   }
-  change_red();
-  printf(">> ");
+  change_cyan();
+  printf(" > ");
   reset();
 }
 
