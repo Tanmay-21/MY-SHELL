@@ -4,10 +4,13 @@
 #include <string.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include "Color.h"
+#include "Utilities.h"
+#include "LinkedList.h"
 #include "URIencoding.h"
 
 // ~Function to Convert integer to string~
@@ -229,22 +232,80 @@ int sh_stackoverflow (char **args) {
   return sh_launch(Args);
 }
 
+process* HeadProcess = NULL;
+
+int sh_bg (char **args) {
+  ++ args;
+  pid_t childPid = fork();
+  if (childPid >= 0) {
+    if (childPid == 0) {
+      if (execvp(args[0],args) == -1) {
+        printf("Invalid Command\n");
+      }
+      exit(EXIT_FAILURE);
+    } else {
+      if (HeadProcess == NULL) {
+        HeadProcess = create_list(childPid, args[0]);
+      } else {
+        add_to_list(childPid, args[0], true);
+      }
+    }
+  } else {
+    perror("forking error");
+  }
+  return 1;
+}
+
+int sh_bglist (char **args) {
+  print_list();
+  return 1;
+}
+
+int sh_kill (char **args) {
+  char *Pid = args[1];
+  if (!Pid) {
+    printf("Please specify Pid\n");
+  } else {
+    int pid = atoi(Pid);
+    process* target = search_in_list(pid, &HeadProcess);
+    if (target != NULL) {
+      if (kill(target->pid, SIGTERM) >= 0) {
+        delete_from_list(pid);
+      } else {
+        perror("Could not kill specified pid\n");
+      }
+    } else {
+      printf("Specify a pid present in the list.\nType \"bglist\" to see active processes\n");
+    }
+  }
+  return 1;
+}
+
 // ~Number of primary builtin commands~
-#define BUILTINPRIM 4
+#define BUILTINPRIM 7
 // ~Specifiying the keywords~
 char *builtin_primary_str[] = {
   "cd",
   "exit",
   "google",
-  "stackoverflow"};
+  "stackoverflow",
+  "bg",
+  "bglist",
+  "kill"
+};
 
 // ~Array of pointers to primary built in functions~
 int (*builtin_primary_func[])(char **) = {
   &sh_cd,
   &sh_exit,
   &sh_google,
-  &sh_stackoverflow
+  &sh_stackoverflow,
+  &sh_bg,
+  &sh_bglist,
+  &sh_kill
 };
+
+
 
 // ~Function to check for the call to any primary builtin command~
 // ~Primary builtin commands can only call or use system commands~
@@ -470,10 +531,31 @@ int sh_execute (char **args) {
   return sh_launch(args);
 }
 
+void broadcastTermination (int pid, int status) {
+  if (WIFEXITED(status)) {
+    printf("exited, status=%d\n", WEXITSTATUS(status));
+  } else if (WIFSIGNALED(status)) {
+    printf("killed by signal %d\n", WTERMSIG(status));
+  } else if (WIFSTOPPED(status)) {
+    printf("stopped by signal %d\n", WSTOPSIG(status));
+  } else if (WIFCONTINUED(status)) {
+    printf("continued\n");
+  }
+  delete_from_list(pid);
+}
+
+static void signalHandler (int sig) {
+  int pid;
+  int status;
+  pid = waitpid(-1, &status, WNOHANG);
+  broadcastTermination(pid, status);
+}
+
 int main(int argc, char **argv) {
   char *line;  // store complete input command
   char **args; // store arguments of input command
   int status;  // store status after command execution
+  signal(SIGCHLD, signalHandler);
   printf("Initializing Personal Shell...\n");
   do {
     sh_print_main();
