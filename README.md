@@ -38,6 +38,6 @@ Some interesting additions made to this personalised shell include...
 
 ![Shell Demo](DEMO/test2.gif)
 
-* Terminal shortcut commands to search direct in google or stackoverflow.
+* Terminal shortcut commands to search direct in google or stackoverflow. Used URI encoding to convert search keywords to URL
 
 ![Shell Demo](DEMO/test3.gif)
