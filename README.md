@@ -18,3 +18,16 @@ Step 4. run using command
 ```
 
 ## Tech Stack Used
+All the functionalities are programmed in C language with the help of libraries such as "sys/wait.h", "sys/types.h", "signal.h" ... etc.
+
+## Important Logic Used
+Basic functionality such as... 
+* Executing commands and processed by forking the main process.
+* Changing directory using "cd" command.
+* Exiting the shell.
+* Running and monitoring process in background.
+* Manual as well as auto killing background process using signals.
+
+All these functionalities work smooth and bug free.
+
+## Interesting Additions
