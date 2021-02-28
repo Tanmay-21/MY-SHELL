@@ -35,4 +35,7 @@ All these functionalities work smooth and bug free.
 ## Interesting Additions
 Some interesting additions made to this personalised shell include...
 * For loop functionality with reference variables similar to Bash.
+
+![Shell Demo](DEMO/test2.gif)
+
 * Terminal shortcut commands to search direct in google or stackoverflow.
