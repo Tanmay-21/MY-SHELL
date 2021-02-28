@@ -29,5 +29,6 @@ Basic functionality such as...
 * Manual as well as auto killing background process using signals.
 
 All these functionalities work smooth and bug free.
+![Shell Demo](DEMO/test1.gif)
 
 ## Interesting Additions
