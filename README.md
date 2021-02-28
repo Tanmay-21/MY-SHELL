@@ -28,7 +28,8 @@ Basic functionality such as...
 * Running and monitoring process in background.
 * Manual as well as auto killing background process using signals.
 
-All these functionalities work smooth and bug free.
 ![Shell Demo](DEMO/test1.gif)
+
+All these functionalities work smooth and bug free.
 
 ## Interesting Additions
