@@ -39,3 +39,5 @@ Some interesting additions made to this personalised shell include...
 ![Shell Demo](DEMO/test2.gif)
 
 * Terminal shortcut commands to search direct in google or stackoverflow.
+
+![Shell Demo](DEMO/test3.gif)
