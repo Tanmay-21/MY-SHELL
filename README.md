@@ -33,3 +33,6 @@ Basic functionality such as...
 All these functionalities work smooth and bug free.
 
 ## Interesting Additions
+Some interesting additions made to this personalised shell include...
+* For loop functionality with reference variables similar to Bash.
+* Terminal shortcut commands to search direct in google or stackoverflow.
